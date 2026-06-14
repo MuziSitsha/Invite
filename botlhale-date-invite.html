@@ -1,0 +1,565 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>A Special Invitation 💌</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400;1,700&family=Cormorant+Garamond:ital,wght@0,300;0,400;1,300;1,400&family=Great+Vibes&family=Inter:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --deep: #0d0610;
+  --wine: #6b1a2a;
+  --rose: #c0445c;
+  --blush: #e8a0b0;
+  --cream: #fdf6f0;
+  --gold: #c9933a;
+  --gold-light: #e8c070;
+  /* envelope dimensions — overridden by JS for responsiveness */
+  --env-w: 320px;
+  --env-half: 160px;
+  --env-h: 212px;
+  --flap-h: 120px;
+  --v-h: 106px;
+}
+
+html, body {
+  width: 100%; min-height: 100%;
+  background: var(--deep);
+  font-family: 'Inter', sans-serif;
+  overflow-x: hidden;
+}
+
+/* ── HEARTS ── */
+.heart-canvas {
+  position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+  pointer-events: none; z-index: 0; overflow: hidden;
+}
+.floating-heart {
+  position: absolute; bottom: -60px;
+  animation: floatUp linear infinite; opacity: 0;
+  user-select: none; pointer-events: none;
+}
+@keyframes floatUp {
+  0%   { transform: translateY(0) rotate(0deg) scale(0.8); opacity: 0; }
+  10%  { opacity: 0.7; }
+  90%  { opacity: 0.4; }
+  100% { transform: translateY(-110vh) rotate(25deg) scale(1.1); opacity: 0; }
+}
+
+/* ── STARS ── */
+.stars { position: fixed; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 1; }
+.star { position: absolute; background: #fff; border-radius: 50%; animation: twinkle ease-in-out infinite; }
+@keyframes twinkle {
+  0%, 100% { opacity: 0.08; transform: scale(1); }
+  50% { opacity: 0.85; transform: scale(1.4); }
+}
+
+/* ── AURORA ── */
+.aurora {
+  position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+  pointer-events: none; z-index: 2;
+  background:
+    radial-gradient(ellipse 60% 40% at 20% 20%, rgba(192,68,92,0.09) 0%, transparent 60%),
+    radial-gradient(ellipse 50% 30% at 80% 80%, rgba(107,26,42,0.12) 0%, transparent 60%),
+    radial-gradient(ellipse 40% 40% at 50% 10%,  rgba(201,147,58,0.05) 0%, transparent 60%);
+}
+
+/* ══════════════════════════════════════
+   PHASE 1 — ENVELOPE
+══════════════════════════════════════ */
+.phase1 {
+  position: fixed; inset: 0; z-index: 10;
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  padding: 20px;
+  transition: opacity 0.5s ease, transform 0.5s ease;
+}
+.phase1.fade-out { opacity: 0; transform: scale(0.85); pointer-events: none; }
+
+.envelope-wrap { width: var(--env-w); }
+.envelope { width: var(--env-w); position: relative; cursor: pointer; }
+
+.env-body {
+  background: linear-gradient(160deg, #f7e8dc, #f0dbd0);
+  border-radius: 4px 4px 8px 8px;
+  height: var(--env-h);
+  position: relative;
+  box-shadow: 0 8px 40px rgba(0,0,0,0.65), 0 0 80px rgba(192,68,92,0.2);
+  overflow: hidden;
+  border: 1px solid rgba(201,147,58,0.35);
+  transition: box-shadow 0.4s ease;
+}
+.envelope:hover .env-body { box-shadow: 0 20px 60px rgba(192,68,92,0.55); }
+.env-body::after {
+  content: ''; position: absolute; bottom: 0; left: 0; right: 0; height: 3px;
+  background: linear-gradient(90deg, var(--wine), var(--gold), var(--rose), var(--gold), var(--wine));
+}
+
+.env-v-left, .env-v-right {
+  position: absolute; bottom: 0; width: 0; height: 0; border-style: solid;
+}
+.env-v-left {
+  left: 0;
+  border-width: 0 0 var(--v-h) var(--env-half);
+  border-color: transparent transparent #e8d8c8 transparent;
+}
+.env-v-right {
+  right: 0;
+  border-width: 0 var(--env-half) var(--v-h) 0;
+  border-color: transparent #e8d8c8 transparent transparent;
+}
+.env-flap {
+  position: absolute; top: 0; left: 0; right: 0;
+  height: 0; width: 0;
+  border-left: var(--env-half) solid transparent;
+  border-right: var(--env-half) solid transparent;
+  border-top: var(--flap-h) solid #d8c8b8;
+  transform-origin: top center; transform: rotateX(0deg);
+  transition: transform 0.75s cubic-bezier(0.4, 0, 0.2, 1); z-index: 5;
+}
+.envelope.open .env-flap { transform: rotateX(180deg); }
+
+.wax-seal {
+  position: absolute; top: 50%; left: 50%;
+  transform: translate(-50%, -50%);
+  width: 58px; height: 58px;
+  background: radial-gradient(circle at 35% 35%, #d4506a, var(--wine));
+  border-radius: 50%; display: flex; align-items: center; justify-content: center;
+  font-size: 24px; z-index: 6;
+  box-shadow: 0 2px 20px rgba(107,26,42,0.7), 0 0 0 1px rgba(201,147,58,0.45);
+  transition: opacity 0.4s ease, transform 0.4s ease;
+}
+.wax-seal::before {
+  content: ''; position: absolute; inset: -4px; border-radius: 50%;
+  border: 1.5px solid var(--gold); opacity: 0.6;
+}
+.envelope.open .wax-seal { opacity: 0; transform: translate(-50%,-50%) scale(0.4); pointer-events: none; }
+
+.open-label {
+  text-align: center; margin-top: 20px;
+  color: var(--gold-light);
+  font-family: 'Cormorant Garamond', serif;
+  font-size: clamp(13px, 3.5vw, 15px); letter-spacing: 4px; text-transform: uppercase;
+  animation: pulse 2s ease-in-out infinite;
+  text-shadow: 0 0 20px rgba(232,192,112,0.45);
+  transition: opacity 0.3s ease;
+}
+@keyframes pulse { 0%, 100% { opacity: 0.35; } 50% { opacity: 1; } }
+
+/* ══════════════════════════════════════
+   PHASE 2 — INVITATION CARD
+══════════════════════════════════════ */
+.phase2 {
+  position: fixed; inset: 0; z-index: 20;
+  display: flex; align-items: center; justify-content: center;
+  padding: 20px 16px;
+  overflow-y: auto;
+  opacity: 0; transform: translateY(30px);
+  pointer-events: none;
+  transition: opacity 0.7s ease, transform 0.7s ease;
+}
+.phase2.visible { opacity: 1; transform: translateY(0); pointer-events: all; }
+
+.invite-card {
+  width: 100%; max-width: 440px;
+  background: var(--cream);
+  border-radius: 20px;
+  padding: clamp(22px, 6vw, 40px) clamp(18px, 5vw, 36px);
+  box-shadow:
+    0 24px 80px rgba(0,0,0,0.65),
+    0 0 0 1px rgba(201,147,58,0.3),
+    0 0 120px rgba(192,68,92,0.18);
+  margin: auto;
+}
+
+/* ── CARD INTERNALS ── */
+.card-rose {
+  font-size: clamp(22px, 6vw, 28px); text-align: center; margin-bottom: 6px;
+  animation: sway 3s ease-in-out infinite;
+}
+@keyframes sway { 0%, 100% { transform: rotate(-3deg); } 50% { transform: rotate(3deg); } }
+
+.card-to {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: clamp(9px, 2.5vw, 11px); letter-spacing: 3px; text-transform: uppercase;
+  color: var(--gold); text-align: center; margin-bottom: 4px;
+}
+
+.card-name {
+  font-family: 'Great Vibes', cursive;
+  font-size: clamp(30px, 9vw, 42px);
+  text-align: center; line-height: 1.15; margin-bottom: 2px;
+  background: linear-gradient(135deg, var(--wine), #9b2a40, var(--gold));
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+  filter: drop-shadow(0 1px 2px rgba(107,26,42,0.18));
+}
+
+.gold-line {
+  display: flex; align-items: center; gap: 8px;
+  margin: 14px 0; justify-content: center;
+}
+.gold-line::before, .gold-line::after {
+  content: ''; flex: 1; height: 1px;
+  background: linear-gradient(90deg, transparent, var(--gold), transparent);
+}
+.gold-icon { font-size: 12px; color: var(--gold); }
+
+.compliment-box {
+  background: linear-gradient(135deg, rgba(107,26,42,0.06), rgba(192,68,92,0.09));
+  border: 1px solid rgba(192,68,92,0.22);
+  border-radius: 12px;
+  padding: clamp(12px, 3.5vw, 18px) clamp(12px, 3.5vw, 20px);
+  margin-bottom: 14px;
+  position: relative; overflow: hidden;
+}
+.compliment-box::before {
+  content: '"'; position: absolute; top: -10px; left: 8px;
+  font-family: 'Playfair Display', serif; font-size: 64px;
+  color: var(--rose); opacity: 0.13; line-height: 1; pointer-events: none;
+}
+.compliment-text {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: clamp(13.5px, 3.8vw, 15.5px);
+  color: #4a1a28; line-height: 1.9; text-align: center; font-style: italic;
+}
+.compliment-text strong { font-style: normal; color: var(--wine); font-weight: 600; }
+
+.card-body {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: clamp(14px, 4vw, 16px);
+  color: #3a1a22; line-height: 1.8; text-align: center; margin-bottom: 14px;
+}
+
+.card-detail {
+  background: linear-gradient(135deg, #fdf0e8, #fde8f0);
+  border: 1px solid rgba(201,147,58,0.28);
+  border-radius: 12px;
+  padding: clamp(12px, 3.5vw, 16px) clamp(12px, 3.5vw, 18px);
+  margin-bottom: 14px;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.65);
+}
+.detail-row {
+  display: flex; align-items: center; gap: 10px; margin-bottom: 11px;
+}
+.detail-row:last-child { margin-bottom: 0; }
+.detail-icon { font-size: clamp(15px, 4.5vw, 18px); flex-shrink: 0; }
+.detail-label {
+  font-family: 'Inter', sans-serif; font-weight: 500;
+  font-size: clamp(8px, 2.2vw, 10px); letter-spacing: 2px; text-transform: uppercase;
+  color: var(--gold); display: block; line-height: 1; margin-bottom: 3px;
+}
+.detail-value {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: clamp(14px, 4vw, 16px); color: var(--wine); line-height: 1.2;
+}
+
+.card-sign {
+  font-family: 'Cormorant Garamond', serif; font-style: italic;
+  font-size: clamp(13px, 3.8vw, 15px); color: var(--rose);
+  text-align: center; margin-bottom: 18px;
+}
+
+/* ── BUTTONS ── */
+.btn-row { display: flex; gap: 12px; justify-content: center; }
+.btn {
+  flex: 1; max-width: 150px;
+  padding: clamp(11px, 3vw, 14px) 0;
+  border: none; border-radius: 40px;
+  font-family: 'Inter', sans-serif;
+  font-size: clamp(12px, 3.5vw, 14px); font-weight: 500;
+  letter-spacing: 1px; cursor: pointer;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  position: relative; overflow: hidden;
+}
+.btn:active { transform: scale(0.96); }
+.btn-yes {
+  background: linear-gradient(135deg, var(--wine), var(--rose), #d4506a);
+  color: #fff; box-shadow: 0 4px 20px rgba(192,68,92,0.5);
+}
+.btn-yes:hover { box-shadow: 0 8px 30px rgba(192,68,92,0.7); transform: translateY(-2px); }
+.btn-yes::after {
+  content: ''; position: absolute; top: 0; left: -100%; width: 60%; height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.22), transparent);
+  animation: shimmer 2.5s infinite;
+}
+@keyframes shimmer { 0% { left: -100%; } 100% { left: 200%; } }
+.btn-no { background: transparent; color: var(--rose); border: 1.5px solid var(--rose); }
+.btn-no:hover { background: rgba(192,68,92,0.08); }
+
+/* ── RESPONSE SCREENS ── */
+.response-screen {
+  display: none; position: fixed; inset: 0; z-index: 100;
+  align-items: center; justify-content: center;
+  padding: 30px 20px; text-align: center;
+}
+.response-screen.active { display: flex; }
+.response-screen::before {
+  content: ''; position: fixed; inset: 0;
+  background: radial-gradient(ellipse at center, #1a0510 0%, var(--deep) 70%);
+  opacity: 0.98;
+}
+.response-content { position: relative; z-index: 1; }
+.response-emoji { font-size: clamp(52px, 15vw, 72px); display: block; margin-bottom: 18px; }
+.response-title {
+  font-family: 'Great Vibes', cursive;
+  font-size: clamp(38px, 12vw, 56px);
+  background: linear-gradient(135deg, var(--cream), var(--gold-light), var(--cream));
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+  margin-bottom: 14px; line-height: 1.2;
+}
+.response-subtitle {
+  font-family: 'Cormorant Garamond', serif; font-style: italic;
+  font-size: clamp(16px, 5vw, 20px);
+  color: var(--blush); line-height: 1.75;
+  max-width: 300px; margin: 0 auto 24px;
+}
+.response-detail {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: clamp(12px, 3.5vw, 15px);
+  color: var(--gold-light); letter-spacing: 2px; text-transform: uppercase; opacity: 0.8;
+}
+.no-screen .response-title {
+  font-family: 'Playfair Display', serif;
+  font-size: clamp(26px, 8vw, 36px);
+  -webkit-text-fill-color: var(--blush); color: var(--blush);
+}
+.no-screen .response-subtitle { color: #8a6070; }
+
+/* ── TOAST ── */
+.sending-toast {
+  position: fixed; bottom: 30px; left: 50%;
+  transform: translateX(-50%) translateY(80px);
+  background: rgba(107,26,42,0.95); color: var(--cream);
+  font-family: 'Inter', sans-serif; font-size: 13px;
+  padding: 10px 22px; border-radius: 40px;
+  border: 1px solid var(--gold);
+  transition: transform 0.4s ease; z-index: 200; white-space: nowrap;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.45);
+}
+.sending-toast.show { transform: translateX(-50%) translateY(0); }
+</style>
+</head>
+<body>
+
+<div class="stars" id="stars"></div>
+<div class="aurora"></div>
+<div class="heart-canvas" id="heartCanvas"></div>
+
+<!-- ── PHASE 1: ENVELOPE ── -->
+<div class="phase1" id="phase1">
+  <div class="envelope-wrap">
+    <div class="envelope" id="envelope" onclick="openEnvelope()">
+      <div class="env-body">
+        <div class="env-flap"></div>
+        <div class="env-v-left"></div>
+        <div class="env-v-right"></div>
+        <div class="wax-seal">🌹</div>
+      </div>
+    </div>
+  </div>
+  <p class="open-label" id="openLabel">✦ &nbsp; tap to open &nbsp; ✦</p>
+</div>
+
+<!-- ── PHASE 2: INVITATION CARD ── -->
+<div class="phase2" id="phase2">
+  <div class="invite-card">
+
+    <div class="card-rose">🌹</div>
+    <div class="card-to">A special invitation for</div>
+    <div class="card-name">Botlhale Joy Kekana</div>
+
+    <div class="gold-line"><span class="gold-icon">✦</span></div>
+
+    <div class="compliment-box">
+      <p class="compliment-text">
+        You carry a rare kind of beauty —<br>
+        the kind that <strong>lights up a room</strong> without trying.<br>
+        Your smile, your grace, the way you exist...<br>
+        it is simply <strong>breathtaking.</strong>
+      </p>
+    </div>
+
+    <p class="card-body">
+      It would be my greatest honour<br>
+      to share an evening with you.<br>
+      Will you join me for dinner?
+    </p>
+
+    <div class="card-detail">
+      <div class="detail-row">
+        <span class="detail-icon">📅</span>
+        <div>
+          <span class="detail-label">Date</span>
+          <span class="detail-value">Friday, 26 June 2026</span>
+        </div>
+      </div>
+      <div class="detail-row">
+        <span class="detail-icon">🕗</span>
+        <div>
+          <span class="detail-label">Time</span>
+          <span class="detail-value">20:00pm 🌙</span>
+        </div>
+      </div>
+      <div class="detail-row">
+        <span class="detail-icon">🍷</span>
+        <div>
+          <span class="detail-label">Occasion</span>
+          <span class="detail-value">A dinner made for two</span>
+        </div>
+      </div>
+    </div>
+
+    <p class="card-sign">— with all my heart &nbsp;💕</p>
+
+    <div class="btn-row">
+      <button class="btn btn-yes" onclick="respond('yes', event)">Yes! 🌹</button>
+      <button class="btn btn-no" onclick="respond('no', event)">Maybe not</button>
+    </div>
+
+  </div>
+</div>
+
+<!-- YES response -->
+<div class="response-screen" id="yesScreen">
+  <div class="response-content">
+    <span class="response-emoji">🥂</span>
+    <div class="response-title">She said Yes!</div>
+    <p class="response-subtitle">Botlhale Joy Kekana will be ready at 8:00 PM on the 26th of June 2026. Do not be late! 🌹</p>
+    <div class="response-detail">Friday · 26 June 2026 · 20:00</div>
+  </div>
+</div>
+
+<!-- NO response -->
+<div class="response-screen no-screen" id="noScreen">
+  <div class="response-content">
+    <span class="response-emoji">🥺</span>
+    <div class="response-title">Aww... not this time.</div>
+    <p class="response-subtitle">But some doors do not close forever.<br>Perhaps another evening? 🌙</p>
+  </div>
+</div>
+
+<div class="sending-toast" id="toast">📨 Sending response...</div>
+
+<script>
+  /* ── RESPONSIVE SIZING (runs on load + every resize) ── */
+  function applyResponsive() {
+    const vw = window.innerWidth;
+    const vh = window.innerHeight;
+    const r  = document.documentElement;
+
+    /* Envelope: never wider than 88vw, capped at 340px */
+    const envW  = Math.min(340, vw * 0.88);
+    const half  = envW / 2;
+    const envH  = Math.round(envW * 0.663);
+    const flap  = Math.round(envH * 0.565);
+    const vH    = Math.round(envH * 0.5);
+    r.style.setProperty('--env-w',    envW + 'px');
+    r.style.setProperty('--env-half', half + 'px');
+    r.style.setProperty('--env-h',    envH + 'px');
+    r.style.setProperty('--flap-h',   flap + 'px');
+    r.style.setProperty('--v-h',      vH   + 'px');
+
+    /* Card: adjust vertical centering for very short screens */
+    const card = document.querySelector('.phase2');
+    if (card) {
+      card.style.alignItems = vh < 680 ? 'flex-start' : 'center';
+    }
+  }
+  applyResponsive();
+  window.addEventListener('resize', applyResponsive);
+  /* Also re-run after fonts load so layout is accurate */
+  document.fonts && document.fonts.ready.then(applyResponsive);
+
+  /* ── STARFIELD ── */
+  const starsEl = document.getElementById('stars');
+  for (let i = 0; i < 110; i++) {
+    const s = document.createElement('div');
+    s.className = 'star';
+    const sz = Math.random() * 2.5 + 0.5;
+    s.style.cssText = `width:${sz}px;height:${sz}px;left:${Math.random()*100}%;top:${Math.random()*100}%;animation-duration:${2+Math.random()*5}s;animation-delay:${Math.random()*6}s;`;
+    starsEl.appendChild(s);
+  }
+
+  /* ── HEARTS ── */
+  const canvas = document.getElementById('heartCanvas');
+  const emojis = ['❤️','🌹','💕','💖','💗','💝','🌸','✨','💫','🥀'];
+  function spawnHeart() {
+    const h = document.createElement('div');
+    h.className = 'floating-heart';
+    h.textContent = emojis[Math.floor(Math.random() * emojis.length)];
+    const sz = 14 + Math.random() * 22, dur = 5 + Math.random() * 7, delay = Math.random() * 2;
+    h.style.cssText = `left:${Math.random()*100}%;font-size:${sz}px;animation-duration:${dur}s;animation-delay:${delay}s;`;
+    canvas.appendChild(h);
+    setTimeout(() => h.remove(), (dur + delay + 0.5) * 1000);
+  }
+  function gentleHearts() { spawnHeart(); setTimeout(gentleHearts, 1600 + Math.random() * 1200); }
+  gentleHearts();
+  function heartBurst(n) { for (let i = 0; i < n; i++) setTimeout(spawnHeart, i * 60); }
+
+  /* ── OPEN ENVELOPE ── */
+  let opened = false;
+  function openEnvelope() {
+    if (opened) return;
+    opened = true;
+    document.getElementById('openLabel').style.opacity = '0';
+    document.getElementById('envelope').classList.add('open');
+    heartBurst(20);
+    /* After flap animation, fade envelope out → fade card in */
+    setTimeout(() => {
+      document.getElementById('phase1').classList.add('fade-out');
+      setTimeout(() => {
+        document.getElementById('phase2').classList.add('visible');
+      }, 350);
+    }, 950);
+  }
+
+  /* ── RESPOND ── */
+  function respond(choice, e) {
+    e && e.stopPropagation();
+    if (choice === 'yes') {
+      document.getElementById('yesScreen').classList.add('active');
+      heartBurst(70);
+      setInterval(spawnHeart, 380);
+      sendEmail('YES 🌹🥂', 'Botlhale Joy Kekana said YES to the dinner on Friday, 26 June 2026 at 20:00! She will be ready! 🎉🌹');
+    } else {
+      document.getElementById('noScreen').classList.add('active');
+      sendEmail('Maybe not 🥺', 'Botlhale Joy Kekana selected "Maybe not" on the dinner invitation for 26 June 2026 at 20:00.');
+    }
+  }
+
+  /* ── EMAIL ── */
+  function sendEmail(response, message) {
+    const toast = document.getElementById('toast');
+    toast.classList.add('show');
+    const script = document.createElement('script');
+    script.src = 'https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js';
+    script.onload = () => {
+      emailjs.init({ publicKey: 'YOUR_EMAILJS_PUBLIC_KEY' });
+      emailjs.send('YOUR_SERVICE_ID', 'YOUR_TEMPLATE_ID', {
+        to_email: 'muzisitsha@gmail.com',
+        subject: '💌 Date Invitation Response: ' + response,
+        message,
+        from_name: "Botlhale's Date Invitation",
+        reply_to: 'noreply@dateinvite.love'
+      }).then(() => {
+        toast.textContent = '✅ Response sent!';
+        setTimeout(() => toast.classList.remove('show'), 3000);
+      }).catch(() => fallbackEmail(response, message));
+    };
+    script.onerror = () => fallbackEmail(response, message);
+    document.head.appendChild(script);
+  }
+
+  function fallbackEmail(response, message) {
+    const toast = document.getElementById('toast');
+    const sub  = encodeURIComponent('💌 Date Invitation Response: ' + response);
+    const body = encodeURIComponent(message + '\n\n— Sent from the date invitation page');
+    window.open(`mailto:muzisitsha@gmail.com?subject=${sub}&body=${body}`);
+    toast.textContent = '📧 Opening email app...';
+    setTimeout(() => toast.classList.remove('show'), 3500);
+  }
+</script>
+</body>
+</html>
