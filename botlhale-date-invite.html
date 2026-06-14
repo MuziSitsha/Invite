@@ -522,43 +522,26 @@ html, body {
       document.getElementById('yesScreen').classList.add('active');
       heartBurst(70);
       setInterval(spawnHeart, 380);
-      sendEmail('YES 🌹🥂', 'Botlhale Joy Kekana said YES to the dinner on Friday, 26 June 2026 at 20:00! She will be ready! 🎉🌹');
+      sendNotification('YES 🌹🥂', 'Botlhale Joy Kekana said YES to the dinner on Friday, 26 June 2026 at 20:00! She will be ready! 🎉🌹');
     } else {
       document.getElementById('noScreen').classList.add('active');
-      sendEmail('Maybe not 🥺', 'Botlhale Joy Kekana selected "Maybe not" on the dinner invitation for 26 June 2026 at 20:00.');
+      sendNotification('Maybe not 🥺', 'Botlhale Joy Kekana selected "Maybe not" on the dinner invitation for 26 June 2026 at 20:00.');
     }
   }
 
-  /* ── EMAIL ── */
-  function sendEmail(response, message) {
+  /* ── NOTIFY VIA WHATSAPP ── */
+  function sendNotification(response, message) {
     const toast = document.getElementById('toast');
+    toast.textContent = '📱 Opening WhatsApp...';
     toast.classList.add('show');
-    const script = document.createElement('script');
-    script.src = 'https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js';
-    script.onload = () => {
-      emailjs.init({ publicKey: 'YOUR_EMAILJS_PUBLIC_KEY' });
-      emailjs.send('YOUR_SERVICE_ID', 'YOUR_TEMPLATE_ID', {
-        to_email: 'muzisitsha@gmail.com',
-        subject: '💌 Date Invitation Response: ' + response,
-        message,
-        from_name: "Botlhale's Date Invitation",
-        reply_to: 'noreply@dateinvite.love'
-      }).then(() => {
-        toast.textContent = '✅ Response sent!';
-        setTimeout(() => toast.classList.remove('show'), 3000);
-      }).catch(() => fallbackEmail(response, message));
-    };
-    script.onerror = () => fallbackEmail(response, message);
-    document.head.appendChild(script);
-  }
 
-  function fallbackEmail(response, message) {
-    const toast = document.getElementById('toast');
-    const sub  = encodeURIComponent('💌 Date Invitation Response: ' + response);
-    const body = encodeURIComponent(message + '\n\n— Sent from the date invitation page');
-    window.open(`mailto:muzisitsha@gmail.com?subject=${sub}&body=${body}`);
-    toast.textContent = '📧 Opening email app...';
-    setTimeout(() => toast.classList.remove('show'), 3500);
+    const waText = encodeURIComponent('💌 *Date Invitation Response*\n\n' + message);
+    window.open('https://wa.me/27613253665?text=' + waText);
+
+    setTimeout(() => {
+      toast.textContent = '✅ Response sent!';
+      setTimeout(() => toast.classList.remove('show'), 2500);
+    }, 800);
   }
 </script>
 </body>
